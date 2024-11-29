@@ -18,7 +18,7 @@ isort = "^5.13.2"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.3"
-pytest-coverage = "^0.0"
+pytest-cov = "^6.0.0"
 
 [tool.black]
 line-length = 119
