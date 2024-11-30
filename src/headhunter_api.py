@@ -1,3 +1,5 @@
+from typing import Any
+
 import requests
 
 from abc import ABC, abstractmethod
@@ -9,7 +11,7 @@ class BaseAPI(ABC):
     """Абстрактный класс для работы с API сервиса с вакансиями"""
 
     @abstractmethod
-    def load_vacancies(self, keyword: str) -> list:
+    def load_vacancies(self, keyword: str) -> list[dict]:
         """Обязательный метод для получения списка вакансий.
         @param keyword: Строковая переменная, содержащая ключевое слово, по которому осуществляется первичный отбор
         вакансий.
@@ -31,9 +33,9 @@ class HeadHunterAPI(BaseAPI):
         @param per_page: Количество вакансий на странице. По умолчанию - 1 (Подробнее в документации на сайте
         компании).
         """
-        self.__url = url
-        self.__headers = {"User-Agent": "HH-User-Agent"}
-        self.__params = {"text": "", "page": pages, "per_page": per_page, "only_with_salary": True}
+        self.__url: str = url
+        self.__headers: Any = {"User-Agent": "HH-User-Agent"}
+        self.__params: Any = {"text": "", "page": pages, "per_page": per_page, "only_with_salary": True}
         self.__vacancies: list = []
 
     def __connect_to_api(self) -> requests.models.Response | None:
