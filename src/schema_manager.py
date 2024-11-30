@@ -23,9 +23,9 @@ class SchemaManager:
             # Перед удалением или изменением базы данных нужно завершить все активные соединения к ней,
             # в т.ч. pgAdmin
             """Что здесь происходит:
-	        pg_stat_activity — это системный каталог PostgreSQL, содержащий информацию обо всех текущих соединениях.
-	        pg_terminate_backend(pid) завершает соединение с указанным PID.
-	        Фильтр pid <> pg_backend_pid() исключает текущее соединение, чтобы не отключить самих себя."""
+            pg_stat_activity — это системный каталог PostgreSQL, содержащий информацию обо всех текущих соединениях.
+            pg_terminate_backend(pid) завершает соединение с указанным PID.
+            Фильтр pid <> pg_backend_pid() исключает текущее соединение, чтобы не отключить самих себя."""
             cur.execute(
                 sql.SQL(
                     """
@@ -33,7 +33,7 @@ class SchemaManager:
                     FROM pg_stat_activity
                     WHERE pg_stat_activity.datname = %s
                       AND pid <> pg_backend_pid();
-                """
+                    """
                 ),
                 [created_dbname],
             )
