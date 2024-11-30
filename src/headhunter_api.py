@@ -87,6 +87,4 @@ if __name__ == "__main__":
     # -----------------------------------------------------------------------------------------------------------------
     hh_vacancies = hh_api.load_vacancies(keyword=keyword)
     for vacancy in hh_vacancies:
-        # print(vacancy, end="\n")
-        print("Работодатель: %s, вакансия: %s" % (vacancy['employer']['name'], vacancy['name']))
-        # print(vacancy['name'])
+        print("Работодатель: %s, вакансия: %s" % (vacancy["employer"]["name"], vacancy["name"]))
