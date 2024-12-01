@@ -6,17 +6,17 @@ from psycopg2 import sql
 class SchemaManager:
     """Класс для инициализации базы данных и таблиц."""
 
-    def __init__(self, connection: dict) -> None:
-        self.__conn = connection
+    def __init__(self, connection_parameters: dict) -> None:
+        self.__params = connection_parameters
 
-    def create_database(self, created_dbname: str) -> None:
+    def create_database(self, data_base_name: str) -> None:
         """
         Создаёт базу данных для сохранения информации о компаниях и вакансиях.
         """
         conn, cur = None, None
         try:
             # Создание подключения и курсора
-            conn = psycopg2.connect(**self.__conn)
+            conn = psycopg2.connect(dbname="postgres", **self.__params)
             conn.autocommit = True
             cur = conn.cursor()
 
@@ -35,12 +35,12 @@ class SchemaManager:
                       AND pid <> pg_backend_pid();
                     """
                 ),
-                [created_dbname],
+                [data_base_name],
             )
 
             # Удаление и создание базы данных
-            cur.execute(f"DROP DATABASE IF EXISTS {created_dbname}")
-            cur.execute(f"CREATE DATABASE {created_dbname}")
+            cur.execute("DROP DATABASE IF EXISTS %s" % data_base_name)
+            cur.execute("CREATE DATABASE %s" % data_base_name)
 
         except psycopg2.Error as e:
             print("Ошибка при работе с базой данных!")
@@ -52,15 +52,57 @@ class SchemaManager:
             if "conn" in locals() and conn:
                 conn.close()
 
-    def create_table(self, table_name: str) -> None:
+    def create_table(
+        self,
+        data_base_name: str,
+        table_name: str,
+        query: str,
+    ) -> None:
         """
-        Создаёт таблицу в соответствии с переданными параметрами.
+        Создаёт таблицу для сохранения информации о компаниях и вакансиях.
         """
-        pass
+        conn = psycopg2.connect(dbname=data_base_name, **self.__params)
+
+        with conn.cursor() as cur:
+            cur.execute("DROP TABLE IF EXISTS %s" % table_name)
+            cur.execute(query % table_name)
+
+        conn.commit()
+        conn.close()
 
 
 if __name__ == "__main__":
-    init_conn = {"dbname": "postgres", "host": "localhost", "user": "postgres", "port": 5433}
+    init_connection_parameters = {"host": "localhost", "user": "postgres", "port": 5433}
 
-    sm = SchemaManager(connection=init_conn)
-    sm.create_database(created_dbname="headhunter")
+    # Создадим базу данных
+    sm = SchemaManager(connection_parameters=init_connection_parameters)
+    sm.create_database(data_base_name="headhunter")
+
+    # Создадим таблицу companies для хранения информации о компаниях
+    query_to_create_companies_table = """
+            CREATE TABLE %s (
+                company_id INT PRIMARY KEY,
+                company_name VARCHAR(50) NOT NULL,
+                company_url TEXT NOT NULL,
+                company_alternate_url TEXT,
+                vacancies_url TEXT NOT NULL
+            )
+            """
+    sm.create_table(data_base_name="headhunter", table_name="companies", query=query_to_create_companies_table)
+
+    # Создадим таблицу companies для хранения информации о вакансиях
+    query_to_create_vacancies_table = """
+            CREATE TABLE %s (
+                vacancy_id INT PRIMARY KEY,
+                company_id INT REFERENCES companies(company_id),
+                vacancy_name VARCHAR(255) NOT NULL,
+                salary_from INT,
+                salary_to INT,
+                salary_currency VARCHAR(3),
+                published_at DATE NOT NULL,
+                vacancy_url TEXT,
+                vacancy_requirement TEXT,
+                vacancy_responsibility TEXT
+            )
+            """
+    sm.create_table(data_base_name="headhunter", table_name="vacancies", query=query_to_create_vacancies_table)
