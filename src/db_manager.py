@@ -42,22 +42,18 @@ class DBManager:
                     already_inserted.append((vacancy["employer"]["id"], vacancy["employer"]["name"]))
 
                 # Заполняем таблицу vacancies
-                # --Сеанс экзорцизма с ключами salary, потому что кое-кто там хочет либо работать без денег,
+                # --Сеанс экзорцизма с ключами salary, потому что кто-то там хочет либо работать без денег,
                 # --либо хочет столько денег, сколько Вселенная дать не в состоянии.
                 if vacancy["salary"] is None:
-                    salary_from = 0
-                    salary_to = 0
+                    salary = 0
                     salary_currency = None
                 else:
-                    salary_from = vacancy["salary"]["from"]
-                    salary_to = vacancy["salary"]["to"]
-                    salary_currency = vacancy["salary"]["currency"]
-
                     if vacancy["salary"]["from"] is None:
-                        salary_from = 0
-
+                        vacancy["salary"]["from"] = 0
                     if vacancy["salary"]["to"] is None:
-                        salary_to = 0
+                        vacancy["salary"]["to"] = 0
+                    salary = max(vacancy["salary"]["from"], vacancy["salary"]["to"])
+                    salary_currency = vacancy["salary"]["currency"]
 
                 # --Сеанс экзорцизма с ключом snippet, потому что кто-то в команде разработчиков hh решил,
                 # --что компетенции и ответственность непременно нужно объединить в какой-то фрагмент...
@@ -70,16 +66,15 @@ class DBManager:
 
                 cur.execute(
                     """
-                    INSERT INTO vacancies (vacancy_id, company_id, vacancy_name, salary_from, salary_to,
+                    INSERT INTO vacancies (vacancy_id, company_id, vacancy_name, salary,
                     salary_currency, published_at, vacancy_url, requirement, responsibility)
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                     """,
                     (
                         vacancy["id"],
                         vacancy["employer"]["id"],
                         vacancy["name"],
-                        salary_from,
-                        salary_to,
+                        salary,
                         salary_currency,
                         vacancy["published_at"],
                         vacancy["url"],
@@ -113,7 +108,7 @@ class DBManager:
         return result
 
 
-    def get_all_vacancies(self, data_base_name: str) -> list[dict]:
+    def get_all_vacancies(self, data_base_name: str) -> list[tuple]:
         """
         Получает список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на
         вакансию.
@@ -122,8 +117,8 @@ class DBManager:
         with conn.cursor() as cur:
             cur.execute(
                 """
-                SELECT vacancy_name, companies.company_name, salary_from, salary_to, salary_currency, vacancy_url FROM 
-                vacancies
+                SELECT vacancy_name, companies.company_name, salary, salary_currency, vacancy_url 
+                FROM vacancies
                 JOIN companies ON companies.company_id = vacancies.company_id
                 ORDER BY vacancy_name
                 """
@@ -135,16 +130,45 @@ class DBManager:
         return result
 
 
-    def get_avg_salary(self) -> float:
+    def get_avg_salary(self, data_base_name: str) -> list[tuple]:
         """
         Получает список всех вакансий, у которых зарплата выше средней по всем вакансиям.
         """
+        conn = psycopg2.connect(dbname=data_base_name, **self.__params)
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT vacancy_name, salary, salary_currency FROM vacancies
+                WHERE salary > (SELECT AVG(salary) FROM vacancies)
+                ORDER BY salary DESC
+                """
+            )
+            result = cur.fetchall()
+
+        conn.close()
+
+        return result
 
 
-    def get_vacancies_with_keyword(self) -> list[dict]:
+    def get_vacancies_with_keyword(self, data_base_name: str, keyword: str) -> list[tuple]:
         """
         Получает список всех вакансий, в названии которых содержатся переданные в метод слова.
         """
+        conn = psycopg2.connect(dbname=data_base_name, **self.__params)
+        with conn.cursor() as cur:
+            cur.execute(
+                """
+                SELECT vacancy_name, salary, salary_currency FROM vacancies
+                WHERE %s IN (vacancy_name)
+                ORDER BY vacancy_name
+                """, (keyword,)
+            )
+            result = cur.fetchall()
+
+        conn.close()
+
+        return result
+
 
 
 if __name__ == "__main__":
@@ -167,6 +191,15 @@ if __name__ == "__main__":
 
     # Получим список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию
     result = dbm.get_all_vacancies(data_base_name="headhunter")
-    for vacancy in result:
-        print("Требуется %s в компанию '%s', зарплата от %s до %s %s, ссылка на вакансию: %s " % tuple(x for x in
-                                                                                                    vacancy))
+    for item in result:
+        print("Требуется %s в компанию '%s', зарплата %s %s, ссылка на вакансию: %s " % tuple(x for x in
+                                                                                                    item))
+    # Получим список всех вакансий, у которых зарплата выше средней по всем вакансиям
+    result = dbm.get_avg_salary(data_base_name="headhunter")
+    for item in result:
+        print("%s зарплата - %s %s" % item)
+
+    # Получим список всех вакансий, в названии которых содержатся переданные в метод слова
+    result = dbm.get_vacancies_with_keyword(data_base_name="headhunter", keyword="аналитик")
+    for item in result:
+        print("%s зарплата - %s %s" % item)
