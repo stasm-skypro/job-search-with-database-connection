@@ -1,7 +1,7 @@
 import os
 import json
 import pytest
-from src.json_worker import JsonWorker
+from src.file_utils import JsonWorker
 
 
 @pytest.fixture

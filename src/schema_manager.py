@@ -4,9 +4,12 @@ from psycopg2 import sql
 
 
 class SchemaManager:
-    """Класс для инициализации базы данных и таблиц."""
+    """Класс для инициализации базы данных и таблиц PostgreSQL."""
 
     def __init__(self, connection_parameters: dict) -> None:
+        """
+        Инициализирует параметры подключения к базе данных.
+        """
         self.__params = connection_parameters
 
     def create_database(self, data_base_name: str) -> None:
@@ -52,12 +55,7 @@ class SchemaManager:
             if "conn" in locals() and conn:
                 conn.close()
 
-    def create_table(
-        self,
-        data_base_name: str,
-        table_name: str,
-        query: str,
-    ) -> None:
+    def create_table(self, data_base_name: str, table_name: str, query: str) -> None:
         """
         Создаёт таблицу для сохранения информации о компаниях и вакансиях.
         """
@@ -72,7 +70,7 @@ class SchemaManager:
 
 
 if __name__ == "__main__":
-    init_connection_parameters = {"host": "localhost", "user": "postgres", "port": 5433}
+    init_connection_parameters = {"host": "localhost", "user": "postgres", "password": "1234", "port": 5433}
 
     # Создадим базу данных
     sm = SchemaManager(connection_parameters=init_connection_parameters)
@@ -81,11 +79,12 @@ if __name__ == "__main__":
     # Создадим таблицу companies для хранения информации о компаниях
     query_to_create_companies_table = """
             CREATE TABLE %s (
-                company_id INT PRIMARY KEY,
-                company_name VARCHAR(50) NOT NULL,
+                company_id VARCHAR(10) PRIMARY KEY,
+                company_name VARCHAR(255) NOT NULL ,
                 company_url TEXT NOT NULL,
                 company_alternate_url TEXT,
-                vacancies_url TEXT NOT NULL
+                trusted BOOL,
+                CONSTRAINT unique_order UNIQUE (company_id, company_name) -- уникальность по комбинации company_id и company_name
             )
             """
     sm.create_table(data_base_name="headhunter", table_name="companies", query=query_to_create_companies_table)
@@ -93,16 +92,16 @@ if __name__ == "__main__":
     # Создадим таблицу companies для хранения информации о вакансиях
     query_to_create_vacancies_table = """
             CREATE TABLE %s (
-                vacancy_id INT PRIMARY KEY,
-                company_id INT REFERENCES companies(company_id),
+                vacancy_id VARCHAR(10) PRIMARY KEY,
+                company_id VARCHAR REFERENCES companies(company_id),
                 vacancy_name VARCHAR(255) NOT NULL,
                 salary_from INT,
                 salary_to INT,
                 salary_currency VARCHAR(3),
                 published_at DATE NOT NULL,
                 vacancy_url TEXT,
-                vacancy_requirement TEXT,
-                vacancy_responsibility TEXT
+                requirement TEXT,
+                responsibility TEXT
             )
             """
     sm.create_table(data_base_name="headhunter", table_name="vacancies", query=query_to_create_vacancies_table)
