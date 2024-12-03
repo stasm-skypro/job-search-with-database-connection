@@ -55,7 +55,7 @@ class DBManager:
 
     def get_avg_salary(self, data_base_name: str) -> list[tuple]:
         """
-        Получает среднюю зарплату по вакансиям
+        Получает среднюю зарплату по вакансиям.
         """
         conn = psycopg2.connect(dbname=data_base_name, **self.__params)
         res: list[tuple]
@@ -73,7 +73,6 @@ class DBManager:
         conn.close()
 
         return res
-
 
     def get_vacancies_with_higher_salary(self, data_base_name: str) -> list[tuple]:
         """
@@ -106,10 +105,14 @@ class DBManager:
 
             try:
                 # Формируем условие WHERE с использованием ILIKE (выполняет поиск независимо от регистра)
-                where_clause = " OR ".join([f"vacancy_name ILIKE %s" for _ in keyword_list])
+                where_clause = " OR ".join(["vacancy_name ILIKE %s" for _ in keyword_list])
 
                 # Полный SQL-запрос
-                query = f"SELECT vacancy_name, salary, salary_currency FROM vacancies WHERE {where_clause} ORDER BY vacancy_name"
+                query = (
+                    """SELECT vacancy_name, salary, salary_currency
+                FROM vacancies WHERE %s ORDER BY vacancy_name"""
+                    % where_clause
+                )
 
                 # Выполнение параметризованного запроса
                 cur.execute(query, [f"%{keyword}%" for keyword in keyword_list])
@@ -136,7 +139,9 @@ if __name__ == "__main__":
     print()
 
     # Получим список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию
-    print("Получим список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию")
+    print(
+        "Получим список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки на вакансию"
+    )
     result = dbm.get_all_vacancies(data_base_name="headhunter")
     for item in result:
         print("Требуется %s в компанию '%s', зарплата %s %s, ссылка на вакансию: %s " % tuple(x for x in item))

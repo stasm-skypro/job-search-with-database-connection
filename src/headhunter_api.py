@@ -76,12 +76,12 @@ if __name__ == "__main__":
     print("Введём входные данные для поиска вакансий")
     pages = 10
     per_page = 100
-    keyword = "Python"
-    print(f"Например: ключевое слово - {keyword}, запрошено страниц - {pages}, вакансий на странице - {per_page}")
+    key_word = "Python"
+    print(f"Например: ключевое слово - {key_word}, запрошено страниц - {pages}, вакансий на странице - {per_page}")
     print("Получим сырые данные из API")
 
     # Создание экземпляра класса для работы с API сайтов с вакансиями
     hh_api = HeadHunterAPI(url=BASE_URL, pages=pages, per_page=per_page)
-    hh_vacancies = hh_api.load_vacancies(keyword=keyword)
+    hh_vacancies = hh_api.load_vacancies(keyword=key_word)
     for vacancy in hh_vacancies:
         print("Работодатель: %s, вакансия: %s" % (vacancy["employer"]["name"], vacancy["name"]))
