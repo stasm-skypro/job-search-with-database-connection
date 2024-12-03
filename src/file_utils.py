@@ -1,6 +1,5 @@
 import json
 import os
-
 from typing import Any
 
 
@@ -21,7 +20,7 @@ class JsonWorker:
         @return: None
         """
         full_path = os.path.abspath(self.__file_name)
-        with open(full_path, "a", encoding="UTF-8") as file:
+        with open(full_path, "w", encoding="UTF-8") as file:
             json.dump(data, file, ensure_ascii=False)
 
     def read_file(self) -> list[dict] | Any:

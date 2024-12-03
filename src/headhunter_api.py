@@ -1,8 +1,7 @@
+from abc import ABC, abstractmethod
 from typing import Any
 
 import requests
-
-from abc import ABC, abstractmethod
 
 BASE_URL = "https://api.hh.ru/vacancies"
 
@@ -24,14 +23,12 @@ class BaseAPI(ABC):
 class HeadHunterAPI(BaseAPI):
     """Класс для работы с API HeadHunter."""
 
-    def __init__(self, url: str = BASE_URL, pages: int = 1, per_page: int = 1) -> None:
+    def __init__(self, url: str = BASE_URL, pages: int = 1, per_page: int = 10) -> None:
         """
         Инициализатор экземпляра класса.
-        @param url: URL-адрес для GET-запроса. По умолчанию "https://api.hh.ru/vacancies" - все сайты группы компаний.
-        HeadHunter. Возможны варианты выбора ...api.hh.kz/... или ...api.headhunter.kg/... (Подробнее в документации
-        на сайте компании).
-        @param per_page: Количество вакансий на странице. По умолчанию - 1 (Подробнее в документации на сайте
-        компании).
+        @param url: URL-адрес для GET-запроса (по умолчанию "https://api.hh.ru/vacancies" - все сайты группы компаний).
+        @param pages: Определяет количество страниц, в которых будет осуществлён поиск (по умолчанию - 1).
+        @param per_page: Количество вакансий на странице (по умолчанию - 10).
         """
         self.__url: str = url
         self.__headers: Any = {"User-Agent": "HH-User-Agent"}
@@ -72,7 +69,10 @@ class HeadHunterAPI(BaseAPI):
 
 
 if __name__ == "__main__":
-    # Создание экземпляра класса для работы с API сайтов с вакансиями
+    # ----------- ПОЛУЧЕНИЕ ВАКАНСИЙ С САЙТА hh.ru В ФОРМАТЕ JSON -------------
+    # Аргумент keyword определяет слово, по которому будет осуществлён поиск.
+    # Аргумент pages определяет количество страниц, в которых будет осуществлён поиск.
+    # Аргумент per_page определяет количество вакансий на странице.
     print("Введём входные данные для поиска вакансий")
     pages = 10
     per_page = 100
@@ -80,13 +80,8 @@ if __name__ == "__main__":
     print(f"Например: ключевое слово - {keyword}, запрошено страниц - {pages}, вакансий на странице - {per_page}")
     print("Получим сырые данные из API")
 
+    # Создание экземпляра класса для работы с API сайтов с вакансиями
     hh_api = HeadHunterAPI(url=BASE_URL, pages=pages, per_page=per_page)
-
-    # Получение вакансий с hh.ru в формате JSON
-    # -----------------------------------------------------------------------------------------------------------------
-    # Аргумент keyword определяет слово, по которому будет осуществлён поиск.
-    # Аргумент pages определяет количество страниц, в которых будет осуществлён поиск.
-    # -----------------------------------------------------------------------------------------------------------------
     hh_vacancies = hh_api.load_vacancies(keyword=keyword)
     for vacancy in hh_vacancies:
         print("Работодатель: %s, вакансия: %s" % (vacancy["employer"]["name"], vacancy["name"]))
