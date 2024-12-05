@@ -119,17 +119,21 @@ def main(arg: int) -> None:
     for key, value in excepted_queries.items():
         print("%s - %s" % (key, value))
 
+    # ------------------- НАЧАЛО ПОЛЬЗОВАТЕЛЬСКОГО ЦИКЛА -----------------------
     # Пока пользователь не подтвердит завершение работы программы, выполнять выбранные запросы
     while 1:
         user_input = input("Введите номер желаемого запроса (по умолчанию - 1): ").lower()
         query_number = user_input if user_input else "1"
-        print("Вы выбрали запрос - %s" % excepted_queries[query_number])
-        print("Результат запроса:", "\n")
+        # print("Вы выбрали запрос - %s" % excepted_queries[query_number])
+        # print("Результат запроса:", "\n")
         dbm = DBManager(connection_parameters=init_connection_parameters)
 
         match query_number:
+
             case "1":
                 # Получим список всех компаний и количество вакансий у каждой компании
+                print("Вы выбрали запрос - %s" % excepted_queries[query_number])
+                print("Результат запроса:", "\n")
                 result = dbm.get_companies_and_vacancies_count(data_base_name="headhunter")
                 print(*list("Компания %s: %d вакансий" % (item[0], item[1]) for item in result), sep="\n")
                 print()
@@ -137,6 +141,8 @@ def main(arg: int) -> None:
             case "2":
                 # Получим список всех вакансий с указанием названия компании, названия вакансии и зарплаты и ссылки
                 # на вакансию
+                print("Вы выбрали запрос - %s" % excepted_queries[query_number])
+                print("Результат запроса:", "\n")
                 result = dbm.get_all_vacancies(data_base_name="headhunter")
                 for item in result:
                     print(
@@ -147,11 +153,15 @@ def main(arg: int) -> None:
 
             case "3":
                 # Получим среднюю зарплату по вакансиям
+                print("Вы выбрали запрос - %s" % excepted_queries[query_number])
+                print("Результат запроса:", "\n")
                 result = dbm.get_avg_salary(data_base_name="headhunter")
                 print(f"Средняя зарплата по вакансиям - {round(result[0][0])} {result[0][1]}")
 
             case "4":
                 # Получим список всех вакансий, у которых зарплата выше средней по всем вакансиям
+                print("Вы выбрали запрос - %s" % excepted_queries[query_number])
+                print("Результат запроса:", "\n")
                 result = dbm.get_vacancies_with_higher_salary(data_base_name="headhunter")
                 for item in result:
                     print("%s зарплата - %s %s" % item)
@@ -159,6 +169,8 @@ def main(arg: int) -> None:
 
             case "5":
                 # Получим список всех вакансий, в названии которых содержатся переданные в метод слова
+                print("Вы выбрали запрос - %s" % excepted_queries[query_number])
+                print("Результат запроса:", "\n")
                 user_input = input(
                     "Введите ключевые слова для поиска через пробел (ключевое слово по умолчанию "
                     "- 'разработчик программист'): "
@@ -172,6 +184,10 @@ def main(arg: int) -> None:
                         print("%s зарплата - %s %s" % item)
                 print()
 
+            case _:
+                # Пользователь ввёл невалидный номер запроса
+                print("Вы выбрали неверный номер запроса")
+
         print("Можно завершить работу программы или сделать следующий запрос")
         user_input = input("Завершить работы программы: y(es) / n(o): ")
         print()
@@ -181,4 +197,4 @@ def main(arg: int) -> None:
 
 if __name__ == "__main__":
     # Если передать 1, то программа пропустит пользовательский запрос и применит значения по умолчанию
-    main(1)
+    main()
