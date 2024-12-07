@@ -6,7 +6,7 @@ from typing import Any
 class JsonWorker:
     """Класс для работы json-файлами."""
 
-    def __init__(self, file_name: str = "../data/data.json") -> None:
+    def __init__(self, file_name: str = "data/data.json") -> None:
         """
         Инициализатор экземпляра класса.
         @param file_name: Строковая переменная, содержащая относительный путь к файлу.
