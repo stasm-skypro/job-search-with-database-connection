@@ -169,5 +169,8 @@ cython_debug/
 *.wpr
 *.wpu
 
-# macos cpecific folder
+# macos specific folder
 .DS_Store/
+
+# postgresql specific file
+database.ini
