@@ -1,5 +1,5 @@
 [postgresql]
-host=****
-user=****
+host=localhost
+user=postgres
 password=****
 port=5433
