@@ -4,7 +4,7 @@ from src.headhunter_api import HeadHunterAPI
 from src.schema_manager import SchemaManager
 
 
-def main(arg: int) -> None:
+def main(arg: int | None = None) -> None:
     """
     Код для получения данных о вакансиях из API HeadHunter, создания базы данных и взаимодействия с пользователем
     """
